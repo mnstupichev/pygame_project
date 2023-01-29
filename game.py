@@ -1,6 +1,7 @@
 import pygame
 import random
 from os import path
+#pygame
 
 WIDTH = 600
 HEIGHT = 480
