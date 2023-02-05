@@ -5,7 +5,6 @@ from os import path
 WIDTH = 600
 HEIGHT = 480
 FPS = 60
-POWERUP_TIME = 5000
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
