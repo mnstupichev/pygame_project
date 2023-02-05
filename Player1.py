@@ -15,8 +15,6 @@ class Player1(pygame.sprite.Sprite):
         self.bullets = bullets
         self.image = pygame.transform.scale(player_img, (40, 70))
         self.rect = self.image.get_rect()
-        self.radius = 20
-        # pygame.draw.circle(self.image, RED, self.rect.center, self.radius)
         self.rect.centery = HEIGHT / 2
         self.rect.left = WIDTH - 570
         self.speedy = 0
