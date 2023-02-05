@@ -19,144 +19,24 @@ pygame.mixer.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("1000 и 1 баг")
 
+snd_dir = path.join(path.dirname(__file__), 'snd')
+
 from Road_lines import Road_line
 from Ball import Ball
 from Block import Block
-from Border import Border
 from Dino import Dino
-from Particle import Particle
 from Platform1 import Platform1
 from Platform2 import Platform2
-from Eyes import Eye
 from Player1 import Player1
 from Player2 import Player2
-from Player_in_lobby import Player
 from draw_lives import draw_lives
 from load_image import load_image
 from draw_text import draw_text
+from go_to_winner_screen import go_to_winner_screen
+from lobby import lobby
 
 font_name = pygame.font.match_font('arial')
-snd_dir = path.join(path.dirname(__file__), 'snd')
 clock = pygame.time.Clock()
-
-
-def lobby():
-    global game1
-    global game2
-    global game3
-    global first_player_points
-    global second_player_points
-    global best_score
-    global song
-    song.stop()
-    rm = random.randrange(1, 8)
-    song = music[rm]
-    song.play()
-    background = load_image("fon_lobby.png")
-    background = pygame.transform.scale(background, (600, 480))
-    background_rect = background.get_rect()
-    screen.blit(background, background_rect)
-    draw_text(screen, f"First player points: {first_player_points}", 20, 80, 20)
-    draw_text(screen, f"Second player points: {second_player_points}", 20, WIDTH - 100, 20)
-    draw_text(screen, f"Best score in game 3: {best_score}", 20, WIDTH / 2, HEIGHT - 50)
-    draw_text(screen, "Choose one game!", 50, WIDTH / 2, HEIGHT / 4 - 50)
-    draw_text(screen, "Game 1", 50, WIDTH / 2, HEIGHT - 300)
-    draw_text(screen, "Game 2", 50, WIDTH / 2, HEIGHT - 210)
-    draw_text(screen, "Game 3", 50, WIDTH / 2, HEIGHT - 120)
-    pygame.display.flip()
-    all_sprites = pygame.sprite.Group()
-    player = Player(all_sprites)
-    all_sprites.add(player)
-    waiting = True
-    while waiting:
-        pygame.mouse.set_visible(False)
-        clock.tick(FPS)
-        keystate = pygame.key.get_pressed()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if keystate[pygame.K_SPACE] and \
-                    WIDTH / 2 + 60 > player.rect.center[0] > WIDTH / 2 - 60 and \
-                    230 > player.rect.center[1] > 180:
-                game1 = True
-                game2 = False
-                game3 = False
-                waiting = False
-
-            if keystate[pygame.K_SPACE] and \
-                    WIDTH / 2 + 60 > player.rect.center[0] > WIDTH / 2 - 60 and \
-                    320 > player.rect.center[1] > 270:
-                game1 = False
-                game2 = True
-                game3 = False
-                waiting = False
-
-            if keystate[pygame.K_SPACE] and \
-                    WIDTH / 2 + 60 > player.rect.center[0] > WIDTH / 2 - 60 and \
-                    410 > player.rect.center[1] > 360:
-                game1 = False
-                game2 = False
-                game3 = True
-                waiting = False
-
-        screen.fill((0, 0, 0))
-        screen.blit(background, background_rect)
-        draw_text(screen, f"First player points: {first_player_points}", 20, 80, 20)
-        draw_text(screen, f"Second player points: {second_player_points}", 20, WIDTH - 100, 20)
-        draw_text(screen, f"Best score in game 3: {best_score}", 20, WIDTH / 2, HEIGHT - 50)
-        draw_text(screen, "Choose one game!", 50, WIDTH / 2, HEIGHT / 4 - 50)
-        draw_text(screen, "Game 1", 50, WIDTH / 2, HEIGHT - 300)
-        draw_text(screen, "Game 2", 50, WIDTH / 2, HEIGHT - 210)
-        draw_text(screen, "Game 3", 50, WIDTH / 2, HEIGHT - 120)
-        all_sprites.update()
-        all_sprites.draw(screen)
-        pygame.display.flip()
-
-
-def go_to_winner_screen(winner):
-    global first_player_points
-    global second_player_points
-    background_of_winner_screen = load_image("winner_background.png")
-    background_of_winner_screen = pygame.transform.scale(background_of_winner_screen, (600, 480))
-    background_of_winner_screen_rect = background_of_winner_screen.get_rect()
-
-    screen.blit(background_of_winner_screen, background_of_winner_screen_rect)
-    draw_text(screen, f"{winner} WON!", 50, WIDTH / 2, HEIGHT - 100)
-    pygame.display.flip()
-    if winner == "FIRST PLAYER":
-        first_player_points += 1
-    else:
-        second_player_points += 1
-    waiting = True
-    all_sprites = pygame.sprite.Group()
-    clock = pygame.time.Clock()
-    one_s = 0
-    while waiting:
-        clock.tick(FPS)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-            if event.type == pygame.KEYDOWN:
-                lobby()
-                waiting = False
-        now = pygame.time.get_ticks()
-        if now - one_s > 100:
-            one_s = now
-            x = random.randrange(1, 599)
-            y = random.randrange(1, 479)
-            particle_count = 20
-            numbers = range(-5, 6)
-            for _ in range(particle_count):
-                particle = Particle((x, y), random.choice(numbers), random.choice(numbers), all_sprites)
-                all_sprites.add(particle)
-
-        all_sprites.update()
-        screen.fill((0, 0, 0))
-        screen.blit(background_of_winner_screen, background_of_winner_screen_rect)
-        draw_text(screen, f"{winner} WON!", 50, WIDTH / 2, HEIGHT - 100)
-        all_sprites.draw(screen)
-        pygame.display.flip()
-
 
 background = load_image("fon_lobby.png")
 background = pygame.transform.scale(background, (600, 480))
@@ -164,14 +44,23 @@ background_rect = background.get_rect()
 
 aboba = 0
 
+#музыка
+music = []
+song = pygame.mixer.Sound(path.join(snd_dir, 'never.mp3'))
+music.append(song)
+for i in range(1, 8):
+    song = pygame.mixer.Sound(path.join(snd_dir, f'{i}.mp3'))
+    music.append(song)
+rm = random.randrange(1, 8)
+song = music[rm]
+
+#Инициализация спарйтов
 all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 player1 = Player1(all_sprites, bullets)
 player2 = Player2(all_sprites, bullets)
 horizontal_borders = pygame.sprite.Group()
 vertical_borders = pygame.sprite.Group()
-border1 = Border(0, 5, WIDTH, 5, all_sprites, horizontal_borders)
-border2 = Border(0, HEIGHT - 5, WIDTH, HEIGHT - 5, all_sprites, horizontal_borders)
 platform1_group = pygame.sprite.Group()
 platform2_group = pygame.sprite.Group()
 ball = Ball(platform1_group, platform2_group, all_sprites)
@@ -188,16 +77,6 @@ hp = load_image("heart.png", WHITE)
 hp = pygame.transform.scale(hp, (50, 50))
 
 pygame.time.set_timer(pygame.USEREVENT, 1000)
-
-# музыка
-music = []
-song = pygame.mixer.Sound(path.join(snd_dir, 'never.mp3'))
-music.append(song)
-for i in range(1, 8):
-    song = pygame.mixer.Sound(path.join(snd_dir, f'{i}.mp3'))
-    music.append(song)
-rm = random.randrange(1, 8)
-song = music[rm]
 
 game1 = False
 game2 = False
@@ -224,10 +103,27 @@ while running:
     if game_over:
         if this_is_first_game or game3_flag:
             game3_flag = False
-            lobby()
+            cort = lobby(game1, game2, game3, first_player_points, second_player_points, best_score, song, music, screen)
+            game1 = cort[0]
+            game2 = cort[1]
+            game3 = cort[2]
+            first_player_points = cort[3]
+            second_player_points = cort[4]
+            best_score = cort[5]
+            song = cort[6]
             this_is_first_game = False
         else:
-            go_to_winner_screen(winner)
+            cort = go_to_winner_screen(winner, first_player_points, second_player_points, screen)
+            first_player_points = cort[0]
+            second_player_points = cort[1]
+            cort = lobby(game1, game2, game3, first_player_points, second_player_points, best_score, song, music, screen)
+            game1 = cort[0]
+            game2 = cort[1]
+            game3 = cort[2]
+            first_player_points = cort[3]
+            second_player_points = cort[4]
+            best_score = cort[5]
+            song = cort[6]
         speedy_of_bullet = 5
         if game1:
             all_sprites = pygame.sprite.Group()
