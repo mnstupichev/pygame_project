@@ -1,6 +1,7 @@
 import pygame
 import random
 from os import path
+import csv
 
 WIDTH = 600
 HEIGHT = 480
@@ -36,6 +37,14 @@ from lobby import lobby
 
 font_name = pygame.font.match_font('arial')
 clock = pygame.time.Clock()
+
+best_score_in_game = 0
+
+with open ("data.csv", encoding="utf8") as database:
+    data = csv.reader(database, delimiter=';', quotechar='"')
+    for best_scores in data:
+        best_score_in_game = int(best_scores[0])
+database.close()
 
 background = load_image("fon_lobby.png")
 background = pygame.transform.scale(background, (600, 480))
@@ -102,7 +111,7 @@ while running:
     if game_over:
         if this_is_first_game or game3_flag:
             game3_flag = False
-            cort = lobby(game1, game2, game3, first_player_points, second_player_points, best_score, song, music, screen)
+            cort = lobby(game1, game2, game3, first_player_points, second_player_points, best_score_in_game, song, music, screen)
             game1 = cort[0]
             game2 = cort[1]
             game3 = cort[2]
@@ -115,7 +124,7 @@ while running:
             cort = go_to_winner_screen(winner, first_player_points, second_player_points, screen)
             first_player_points = cort[0]
             second_player_points = cort[1]
-            cort = lobby(game1, game2, game3, first_player_points, second_player_points, best_score, song, music, screen)
+            cort = lobby(game1, game2, game3, first_player_points, second_player_points, best_score_in_game, song, music, screen)
             game1 = cort[0]
             game2 = cort[1]
             game3 = cort[2]
@@ -257,6 +266,13 @@ while running:
             if pygame.sprite.collide_mask(dino, block):
                 game3_flag = True
                 game_over = True
+                if best_score_in_game < best_score:
+                    with open('data.csv', 'w', newline='', encoding="utf8") as database:
+                        writer = csv.writer(
+                            database, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                        writer.writerow([best_score])
+                    database.close()
+                    best_score_in_game = best_score
 
         if best_score < counter:
             best_score = counter
